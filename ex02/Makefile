@@ -1,8 +1,8 @@
 CC = c++
 FLAGS = -Wall -Werror -Wextra -std=c++11
-SRC = main.cpp BitcoinExchange.cpp
+SRC = main.cpp PmergeMe.cpp
 OBJ = $(SRC:.cpp=.o)
-NAME = btc
+NAME = PmergeMe
 RM = rm -f
 
 all: $(NAME)

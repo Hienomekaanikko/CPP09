@@ -1,69 +1,111 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   BitcoinExchange.cpp                                :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: msuokas <msuokas@student.hive.fi>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/23 10:31:54 by msuokas           #+#    #+#             */
-/*   Updated: 2025/10/23 17:10:32 by msuokas          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "BitcoinExchange.hpp"
 
-float extractinputValue(std::string line) {
-    float value;
-    
-    value = stof(line.substr(13, line.length()));
-    return value;
+BitcoinExchange::BitcoinExchange(const std::string& path) {
+    loadDatabase(path);
 }
 
-std::string extractDate(std::string line) {
-    std::string date;
+BitcoinExchange::~BitcoinExchange() {}
 
-    date = line.substr(0, 10);
-    return date;
+bool BitcoinExchange::isValidDate(const std::string& date) {
+    if (date.length() != 10) return false;
+    if (date[4] != '-' || date[7] != '-') return false;
+
+    for (int i = 0; i < 10; i++) {
+        if (i == 4 || i == 7) continue;
+        if (!isdigit(date[i])) return false;
+    }
+    return true;
 }
 
-void Btc::findValue(std::string& path) {
-    std::string value;
-    
-    std::ifstream file(path);
-    if (!file.is_open())
-        throw "there was a problem opening a file";
+void BitcoinExchange::loadDatabase(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file)
+        throw std::runtime_error("Error: could not open database file.");
+
     std::string line;
-    getline(file, line);
-    while (getline(file, line)) {
-        std::string date = extractDate(line);
-        float val = extractinputValue(line);
-        auto it = _db.lower_bound(date);
-        if (it == _db.end())
-            --it;
-        else if (it->first != date && it != _db.begin())
-            --it;
-        if (it != _db.end()){
-            std::cout << date << " => " << val << " = " << it->second * val << "\n";
+
+    if (!std::getline(file, line) || line != "date,exchange_rate")
+        throw std::runtime_error("Error: invalid CSV header.");
+
+    while (std::getline(file, line)) {
+        if (line.empty())
+            throw std::runtime_error("Error: empty line in CSV.");
+
+        std::stringstream ss(line);
+        std::string date, rateStr, extra;
+
+        if (!std::getline(ss, date, ',') ||
+            !std::getline(ss, rateStr, ',') ||
+            std::getline(ss, extra))
+            throw std::runtime_error("Error: bad CSV format => " + line);
+
+        if (!isValidDate(date))
+            throw std::runtime_error("Error: invalid date => " + date);
+
+        double rate;
+        try {
+            rate = std::stod(rateStr);
+        } catch (...) {
+            throw std::runtime_error("Error: invalid rate => " + rateStr);
         }
+        rates[date] = rate;
     }
 }
 
-float extractValue(std::string line) {
-    float value;
-    
-    value = stof(line.substr(11, line.length()));
-    return value;
-}
+void BitcoinExchange::processInput(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file)
+        throw std::runtime_error("Error: could not open input file.");
 
-Btc::Btc(std::string& path) {
-    std::ifstream file(path);
-    if (!file.is_open())
-        throw "there was a problem opening the file";
     std::string line;
-    getline(file, line);
-    while (getline(file, line)) {
-        std::string date = extractDate(line);
-        float value = extractValue(line);
-        _db[date] = value;
+    std::getline(file, line); // skip header
+
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+
+        size_t pos = line.find(" | ");
+        if (pos == std::string::npos) {
+            std::cerr << "Error: bad input => " << line << "\n";
+            continue;
+        }
+
+        std::string date = line.substr(0, pos);
+        std::string valueStr = line.substr(pos + 3);
+
+        if (!isValidDate(date)) {
+            std::cerr << "Error: bad date => " << date << "\n";
+            continue;
+        }
+
+        double value;
+        try {
+            value = std::stod(valueStr);
+        } catch (...) {
+            std::cerr << "Error: invalid number => " << line << "\n";
+            continue;
+        }
+
+        if (value < 0) {
+            std::cerr << "Error: not a positive number.\n";
+            continue;
+        }
+
+        if (value > 1000) {
+            std::cerr << "Error: too large a number.\n";
+            continue;
+        }
+
+        auto it = rates.lower_bound(date);
+
+        if (it == rates.end() || it->first != date) {
+            if (it == rates.begin()) {
+                std::cerr << "Error: no earlier data available.\n";
+                continue;
+            }
+            --it;
+        }
+
+        std::cout << date << " => " << value << " = "
+                  << value * it->second << "\n";
     }
 }
