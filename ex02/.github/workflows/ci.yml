@@ -1,0 +1,104 @@
+name: C++ Robot CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip build-essential
+
+      - name: Install Python dependencies
+        run: |
+          pip3 install -r requirements.txt
+
+      - name: Build project
+        run: |
+          make clean || true
+          make
+
+      - name: Run Robot tests
+        run: |
+          robot --outputdir results tests/
+
+      - name: Upload Robot reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-results
+          path: results/
+
+
+  sanitizer-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3 python3-pip
+
+      - name: Install Python dependencies
+        run: |
+          pip3 install -r requirements.txt
+
+      - name: Build with sanitizers
+        run: |
+          make clean || true
+          g++ -std=c++17 -Wall -Wextra -Werror \
+          -fsanitize=address,undefined -g \
+          *.cpp -o PmergeMe
+
+      - name: Run tests under sanitizer
+        run: |
+          robot --outputdir results tests/
+
+      - name: Upload sanitizer logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitizer-results
+          path: results/
+
+
+  matrix-test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Ubuntu only fix)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip build-essential
+
+      - name: Install Python dependencies
+        run: |
+          pip3 install -r requirements.txt
+
+      - name: Build project
+        run: |
+          make clean || true
+          make
+
+      - name: Run tests
+        run: |
+          robot --outputdir results tests/
