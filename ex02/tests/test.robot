@@ -16,7 +16,7 @@ Negative values Test
 Assert Sorted Result
     [Arguments]    @{input}
 
-    ${result}=    Run Process    ./PmergeMe    @{input}
+    ${result}=    Run Process    ../PmergeMe    @{input}
 
     Should Be Equal As Integers    ${result.rc}    0
 
@@ -39,7 +39,7 @@ Assert Sorted Result
 Assert Error Result
     [Arguments]    @{input}
 
-    ${result}=    Run Process    ./PmergeMe    @{input}
+    ${result}=    Run Process    ../PmergeMe    @{input}
 
     Should Be Equal As Integers    ${result.rc}    1
     Should Contain    ${result.stderr}    Error
