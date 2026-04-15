@@ -20,12 +20,12 @@ jobs:
 
       - name: Build ex02
         run: |
-          cd cpp09/ex02
+          cd ex02
           make
 
       - name: Run Robot tests
         run: |
-          cd cpp09/tests/ex02
+          cd tests/ex02
           robot .
 
       - name: Upload test results
