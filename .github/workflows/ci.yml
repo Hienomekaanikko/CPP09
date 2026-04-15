@@ -1,4 +1,4 @@
-name: C++ Robot CI
+name: C++ CI with Robot Framework
 
 on:
   push:
@@ -9,34 +9,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 python3-venv build-essential
+          sudo apt-get install -y python3 python3-pip g++
+          pip3 install robotframework
 
-      - name: Create Python venv + install Robot Framework
+      - name: Build ex02
         run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install robotframework
-
-      - name: Build project
-        run: |
-          make clean || true
+          cd cpp09/ex02
           make
 
       - name: Run Robot tests
         run: |
-          source venv/bin/activate
-          robot --outputdir results tests/
+          cd cpp09/tests/ex02
+          robot .
 
-      - name: Upload Robot reports
-        if: always()
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: robot-results
-          path: results/
+          path: cpp09/tests/ex02/output.xml
