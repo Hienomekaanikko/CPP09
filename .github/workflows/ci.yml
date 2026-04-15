@@ -32,4 +32,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: robot-results
-          path: cpp09/tests/ex02/output.xml
+          path: tests/output.xml
