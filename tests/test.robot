@@ -12,6 +12,12 @@ Already Sorted Test
 Negative values Test
     Assert Error Result    -1    2   0    9    100
 
+Character input Test
+    Assert Error Result    100    a    3    4    6
+
+INT_MAX input Test
+    Assert Error Result    134314134134134    9    3    4    6
+
 *** Keywords ***
 Assert Sorted Result
     [Arguments]    @{input}
