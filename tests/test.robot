@@ -25,11 +25,9 @@ EX02 INT_MAX input Test
 Assert Calculation Result
     [Arguments]    @{input}
 
-    ${result}=    Run Process    ../ex01/RPN
+    ${result}=    Run Process    ../ex01/RPN    @{input}
 
     Should Be Equal As Integers    ${result.rc}    0
-
-    ${result}=    Strip String    ${result}
 
     ${actual}=    42
 
