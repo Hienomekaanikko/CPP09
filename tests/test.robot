@@ -4,7 +4,7 @@ Library    String
 
 *** Test Cases ***
 EX01 Basic Calculation 1
-    Assert Calculation Result 8 9 * 9 - 9 - 9 - 4 - 1 +
+    Assert Calculation Result    8 9 * 9 - 9 - 9 - 4 - 1 +
 
 EX02 Basic Sort Test
     Assert Sorted Result    3    1    2    5    4
@@ -32,7 +32,7 @@ Assert Calculation Result
     ${actual}=    42
 
     Should Be Equal As Integers    ${actual}    ${result}
-    
+
 Assert Sorted Result
     [Arguments]    @{input}
 
