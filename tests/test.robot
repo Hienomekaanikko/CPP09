@@ -29,6 +29,8 @@ Assert Calculation Result
 
     Should Be Equal As Integers    ${result.rc}    0
 
+    ${result}=    Strip String    ${result}
+
     ${actual}=    42
 
     Should Be Equal As Integers    ${actual}    ${result}
