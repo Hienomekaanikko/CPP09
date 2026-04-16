@@ -22,6 +22,11 @@ jobs:
         run: |
           cd ex02
           make
+      
+      - name: Build ex01
+        run: |
+          cd ex01
+          make
 
       - name: Run Robot tests
         run: |
