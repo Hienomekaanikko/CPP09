@@ -31,7 +31,7 @@ Assert Calculation Result
 
     ${actual}=    42
 
-    Should Be Equal As Integers    ${actual}    ${result}
+    Should Be Equal As Integers    ${actual}    ${result.stdout}
 
 Assert Sorted Result
     [Arguments]    @{input}
