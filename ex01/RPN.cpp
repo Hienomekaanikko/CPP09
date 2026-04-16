@@ -53,5 +53,5 @@ RPN::RPN(const std::string& input) {
         // else skip spaces
     }
     long long finalres = _stack.top();
-    std::cout << "res == " << finalres << std::endl;
+    std::cout << finalres << std::endl;
 }
