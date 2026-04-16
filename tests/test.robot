@@ -29,7 +29,7 @@ Assert Calculation Result
 
     Should Be Equal As Integers    ${result.rc}    0
 
-    ${actual}=    42
+    ${actual}=    Set Variable    42
 
     Should Be Equal As Integers    ${actual}    ${result.stdout}
 
