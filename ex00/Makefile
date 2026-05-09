@@ -7,6 +7,9 @@ RM = rm -f
 
 all: $(NAME)
 
+%.o: %.cpp
+	$(CC) $(FLAGS) -c $< -o $@
+
 $(NAME): $(OBJ)
 	$(CC) $(FLAGS) $(OBJ) -o $(NAME)
 
@@ -15,5 +18,7 @@ clean:
 
 fclean: clean
 	$(RM) $(NAME)
+
+re: fclean all
 
 .PHONY: all clean fclean re

@@ -15,10 +15,12 @@ private:
     Container mergeInsertSort(Container arr);
 
     std::vector<int> buildJacobOrder(int n);
-    int binarySearchInsert(const std::vector<int>& arr, int value);
+    int binarySearchInsert(const std::vector<int>& arr, int value, int bound);
 
 public:
     PmergeMe();
+    PmergeMe(const PmergeMe& o);
+    PmergeMe& operator=(const PmergeMe& o);
     ~PmergeMe();
 
     void addValue(int val);

@@ -2,6 +2,16 @@
 
 PmergeMe::PmergeMe() {}
 
+PmergeMe::PmergeMe(const PmergeMe& o) : _vec(o._vec), _deq(o._deq) {}
+
+PmergeMe& PmergeMe::operator=(const PmergeMe& o) {
+    if (this != &o) {
+        _vec = o._vec;
+        _deq = o._deq;
+    }
+    return *this;
+}
+
 PmergeMe::~PmergeMe() {}
 
 void PmergeMe::addValue(int val) {
@@ -10,30 +20,34 @@ void PmergeMe::addValue(int val) {
 }
 
 void PmergeMe::printBefore() const {
-    for (size_t i = 0; i < _vec.size(); i++)
-        std::cout << _vec[i] << " ";
+    for (size_t i = 0; i < _vec.size(); i++) {
+        if (i > 0) std::cout << " ";
+        std::cout << _vec[i];
+    }
     std::cout << std::endl;
 }
 
 void PmergeMe::sortAndPrint() {
 
-    // -------- VECTOR TIMING --------
+    // vector timing
     clock_t startVec = clock();
     std::vector<int> sortedVec = mergeInsertSort(_vec);
     clock_t endVec = clock();
 
-    // -------- DEQUE TIMING --------
+    // deque timing
     clock_t startDeq = clock();
     std::deque<int> sortedDeq = mergeInsertSort(_deq);
     clock_t endDeq = clock();
 
-    // -------- PRINT RESULT (ONLY ONCE) --------
+    // print res
     std::cout << "After: ";
-    for (size_t i = 0; i < sortedVec.size(); i++)
-        std::cout << sortedVec[i] << " ";
+    for (size_t i = 0; i < sortedVec.size(); i++) {
+        if (i > 0) std::cout << " ";
+        std::cout << sortedVec[i];
+    }
     std::cout << std::endl;
 
-    // -------- TIME CALCULATION --------
+    // time calc
     double timeVec = (double)(endVec - startVec) / CLOCKS_PER_SEC * 1e6;
     double timeDeq = (double)(endDeq - startDeq) / CLOCKS_PER_SEC * 1e6;
 
@@ -46,11 +60,9 @@ void PmergeMe::sortAndPrint() {
               << timeDeq << " us" << std::endl;
 }
 
-// ---------------- UTILS ----------------
-
-int PmergeMe::binarySearchInsert(const std::vector<int>& arr, int value) {
+int PmergeMe::binarySearchInsert(const std::vector<int>& arr, int value, int bound) {
     int left = 0;
-    int right = arr.size();
+    int right = bound;
 
     while (left < right) {
         int mid = left + (right - left) / 2;
@@ -97,8 +109,6 @@ std::vector<int> PmergeMe::buildJacobOrder(int n) {
     return order;
 }
 
-// ---------------- CORE ----------------
-
 template <typename Container>
 Container PmergeMe::mergeInsertSort(Container arr) {
     if (arr.size() <= 1)
@@ -123,22 +133,37 @@ Container PmergeMe::mergeInsertSort(Container arr) {
 
     bigs = mergeInsertSort(bigs);
 
+    // Re-pair each sorted b-value with its original a-value
+    std::vector<std::pair<int, int> > sortedPairs;
+    for (size_t k = 0; k < bigs.size(); k++) {
+        for (size_t j = 0; j < pairs.size(); j++) {
+            if (pairs[j].second == bigs[k]) {
+                sortedPairs.push_back(pairs[j]);
+                break;
+            }
+        }
+    }
+
     std::vector<int> result = bigs;
 
-    result.insert(result.begin(), pairs[0].first);
+    // sortedPairs[0].first <= sortedPairs[0].second == bigs[0] (min b)
+    result.insert(result.begin(), sortedPairs[0].first);
 
-    std::vector<int> order = buildJacobOrder(pairs.size());
+    std::vector<int> order = buildJacobOrder(sortedPairs.size());
 
     for (size_t k = 0; k < order.size(); k++) {
         int i = order[k];
-        int value = pairs[i].first;
+        int value = sortedPairs[i].first;
+        int pairedB = sortedPairs[i].second;
 
-        int pos = binarySearchInsert(result, value);
+        // value <= pairedB, so restrict search to [0, position_of_pairedB]
+        int bPos = (int)(std::lower_bound(result.begin(), result.end(), pairedB) - result.begin());
+        int pos = binarySearchInsert(result, value, bPos + 1);
         result.insert(result.begin() + pos, value);
     }
 
     if (straggler != -1) {
-        int pos = binarySearchInsert(result, straggler);
+        int pos = binarySearchInsert(result, straggler, (int)result.size());
         result.insert(result.begin() + pos, straggler);
     }
 

@@ -4,6 +4,14 @@ BitcoinExchange::BitcoinExchange(const std::string& path) {
     loadDatabase(path);
 }
 
+BitcoinExchange::BitcoinExchange(const BitcoinExchange& o) : rates(o.rates) {}
+
+BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& o) {
+    if (this != &o)
+        rates = o.rates;
+    return *this;
+}
+
 BitcoinExchange::~BitcoinExchange() {}
 
 bool BitcoinExchange::isValidDate(const std::string& date) {
@@ -85,7 +93,7 @@ void BitcoinExchange::processInput(const std::string& filename) {
             continue;
         }
 
-        if (value < 0) {
+        if (std::isnan(value) || value < 0) {
             std::cerr << "Error: not a positive number.\n";
             continue;
         }

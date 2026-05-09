@@ -6,11 +6,14 @@
 #include <fstream>   
 #include <sstream>   
 #include <stdexcept> 
-#include <cctype>     
+#include <cctype>
+#include <cmath>
 
 class BitcoinExchange {
 public:
     BitcoinExchange(const std::string& path);
+    BitcoinExchange(const BitcoinExchange& o);
+    BitcoinExchange& operator=(const BitcoinExchange& o);
     ~BitcoinExchange();
 
     void processInput(const std::string& filename);

@@ -1,5 +1,6 @@
 #include "PmergeMe.hpp"
 #include <climits>
+#include <set>
 
 int main(int ac, char **av) {
     if (ac < 2) {
@@ -8,6 +9,7 @@ int main(int ac, char **av) {
     }
 
     PmergeMe sorter;
+    std::set<int> seen;
 
     for (int i = 1; i < ac; i++) {
         long long val;
@@ -24,7 +26,13 @@ int main(int ac, char **av) {
             return 1;
         }
 
-        sorter.addValue(static_cast<int>(val));
+        int ival = static_cast<int>(val);
+        if (!seen.insert(ival).second) {
+            std::cerr << "Error" << std::endl;
+            return 1;
+        }
+
+        sorter.addValue(ival);
     }
 
     std::cout << "Before: ";
