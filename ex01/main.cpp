@@ -7,7 +7,7 @@ int main(int ac, char **av) {
     }
     std::string input(av[1]);
     try {
-        RPN thing(input);
+        RPN rpn(input);
     } catch (std::exception& e) {
        std::cerr << e.what() << std::endl;
     }

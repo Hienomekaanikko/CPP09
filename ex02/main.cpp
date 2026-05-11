@@ -1,5 +1,6 @@
 #include "PmergeMe.hpp"
 #include <climits>
+#include <cstring>
 #include <set>
 
 int main(int ac, char **av) {
@@ -15,7 +16,10 @@ int main(int ac, char **av) {
         long long val;
 
         try {
-            val = std::stoll(av[i]);
+            size_t pos;
+            val = std::stoll(av[i], &pos);
+            if (pos != std::strlen(av[i]))
+                throw std::invalid_argument("");
         } catch (...) {
             std::cerr << "Error" << std::endl;
             return 1;
