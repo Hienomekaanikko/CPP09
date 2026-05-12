@@ -10,12 +10,15 @@ class PmergeMe {
 private:
     std::vector<int> _vec;
     std::deque<int>  _deq;
+    int _compCount;
 
-    template <typename Container>
-    Container mergeInsertSort(Container arr);
+    std::vector<int> mergeInsertSort(std::vector<int> arr);
+    std::deque<int>  mergeInsertSort(std::deque<int> arr);
 
     std::vector<int> buildJacobOrder(int n);
-    int binarySearchInsert(const std::vector<int>& arr, int value, int bound);
+
+    template <typename Container>
+    int binarySearchInsert(const Container& arr, int value, int bound);
 
 public:
     PmergeMe();
