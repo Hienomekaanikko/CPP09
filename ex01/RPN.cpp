@@ -17,9 +17,9 @@ RPN::RPN(const std::string& input) {
             if (_stack.size() < 2)
                 throw std::runtime_error("Error");
 
-            long long val1 = _stack.top(); _stack.pop();
-            long long val2 = _stack.top(); _stack.pop();
-            long long res = 0;
+            int val1 = _stack.top(); _stack.pop();
+            int val2 = _stack.top(); _stack.pop();
+            int res = 0;
 
             if (input[i] == '+') res = val2 + val1;
             else if (input[i] == '-') res = val2 - val1;

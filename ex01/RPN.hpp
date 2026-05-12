@@ -7,7 +7,7 @@
 class RPN {
     private:
         std::string _input;
-        std::stack<long long> _stack;
+        std::stack<int> _stack;
     public:
         RPN();
         RPN(const std::string& _inputval);

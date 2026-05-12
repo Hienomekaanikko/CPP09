@@ -66,8 +66,10 @@ void BitcoinExchange::processInput(const std::string& filename) {
         throw std::runtime_error("Error: could not open input file.");
 
     std::string line;
-    std::getline(file, line); // skip header
-
+    std::getline(file, line);
+    if (line != "date | value") {
+        throw std::runtime_error("Error: invalid header");
+    }
     while (std::getline(file, line)) {
         if (line.empty()) continue;
 
@@ -87,9 +89,15 @@ void BitcoinExchange::processInput(const std::string& filename) {
 
         double value;
         try {
-            value = std::stod(valueStr);
+            size_t pos;
+            value = std::stod(valueStr, &pos);
+            if (pos != valueStr.size()) {
+                std::cerr << "Error: invalid value => " << line << "\n";
+                continue;
+            }
+
         } catch (...) {
-            std::cerr << "Error: invalid number => " << line << "\n";
+            std::cerr << "Error: invalid value => " << line << "\n";
             continue;
         }
 
@@ -113,7 +121,7 @@ void BitcoinExchange::processInput(const std::string& filename) {
             --it;
         }
 
-        std::cout << date << " => " << value << " = "
+        std::cout << it->first << " => " << value << " = "
                   << value * it->second << "\n";
     }
 }
