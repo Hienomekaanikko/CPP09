@@ -1,13 +1,14 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 #include <stack>
 #include <string>
 
 class RPN {
     private:
         std::string _input;
-        std::stack<int> _stack;
+        std::stack<long long> _stack;
     public:
         RPN();
         RPN(const std::string& _inputval);
