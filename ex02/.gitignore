@@ -1,0 +1,6 @@
+# Robot Framework outputs
+output.xml
+log.html
+report.html
+test.robot
+.venv

@@ -1,187 +1,7 @@
 #include "PmergeMe.hpp"
-#include <iostream>
-
-static const int INVALID_ID = -1;
-
-// ════════════════════════════════════════════════════════════════
-// FordJohnson — method implementations
-// ════════════════════════════════════════════════════════════════
-
-template <typename OutContainer>
-FordJohnson<OutContainer>::FordJohnson() : _comparisons(0) {}
-
-template <typename OutContainer>
-int FordJohnson<OutContainer>::comparisons() const { return _comparisons; }
-
-template <typename OutContainer>
-typename FordJohnson<OutContainer>::BlockId
-FordJohnson<OutContainer>::makeBlock(int v) {
-    Block b; b.value = v;
-    _pool.push_back(b);
-    return static_cast<BlockId>(_pool.size() - 1);
-}
-
-template <typename OutContainer>
-typename FordJohnson<OutContainer>::PairRecord
-FordJohnson<OutContainer>::makePair(BlockId id0, BlockId id1) {
-    ++_comparisons;
-    if (_pool[id0].rep() >= _pool[id1].rep())
-        return PairRecord(id0, id1);
-    return PairRecord(id1, id0);
-}
-
-template <typename OutContainer>
-std::vector<int> FordJohnson<OutContainer>::jacobsthalOrder(int m) {
-    std::vector<int> order;
-    if (m <= 0) return order;
-
-    std::vector<int> J;
-    J.push_back(1);
-    J.push_back(3);
-    while (J.back() < m + 2) {
-        int sz = static_cast<int>(J.size());
-        J.push_back(J[sz - 1] + 2 * J[sz - 2]);
-    }
-
-    std::vector<bool> used(m, false);
-
-    for (size_t k = 1; k < J.size(); k++) {
-        int bHigh = J[k];
-        int bLow  = J[k - 1] + 1;
-        if (bHigh > m + 1) bHigh = m + 1;
-        for (int b = bHigh; b >= bLow; b--) {
-            int pi = b - 2;
-            if (pi >= 0 && pi < m && !used[pi]) {
-                order.push_back(pi);
-                used[pi] = true;
-            }
-        }
-        if (J[k] > m + 1) break;
-    }
-
-    for (int i = m - 1; i >= 0; i--)
-        if (!used[i]) order.push_back(i);
-
-    return order;
-}
-
-template <typename OutContainer>
-int FordJohnson<OutContainer>::findBoundPos(const Sequence& chain,
-                                            BlockId boundId) const {
-    int target = _pool[boundId].rep();
-    int lo = 0, hi = static_cast<int>(chain.size());
-    while (lo < hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (_pool[chain[mid]].rep() < target) lo = mid + 1;
-        else                                   hi = mid;
-    }
-    return lo;
-}
-
-template <typename OutContainer>
-int FordJohnson<OutContainer>::binaryInsertPos(const Sequence& chain,
-                                               BlockId bId, int bound) {
-    int target = _pool[bId].rep();
-    int lo = 0, hi = bound;
-    while (lo < hi) {
-        int mid = lo + (hi - lo) / 2;
-        ++_comparisons;
-        if (_pool[chain[mid]].rep() < target) lo = mid + 1;
-        else                                   hi = mid;
-    }
-    return lo;
-}
-
-// ── Core recursive sort ───────────────────────────────────────────
-
-template <typename OutContainer>
-typename FordJohnson<OutContainer>::Sequence
-FordJohnson<OutContainer>::sort(const Sequence& seq, int depth) {
-    if (seq.size() <= 1)
-        return seq;
-
-    // Phase 2 — pair adjacent elements, recurse on a-sequence
-    std::vector<PairRecord> pairs;
-    pairs.reserve(seq.size() / 2);
-    for (size_t i = 0; i + 1 < seq.size(); i += 2)
-        pairs.push_back(makePair(seq[i], seq[i + 1]));
-
-    BlockId oddId = (seq.size() % 2 == 1) ? seq.back() : INVALID_ID;
-
-    Sequence aSeq;
-    aSeq.reserve(pairs.size());
-    for (size_t i = 0; i < pairs.size(); i++)
-        aSeq.push_back(pairs[i].aId);
-
-    Sequence sortedA = sort(aSeq, depth + 1);
-
-    // Phase 3 — build aToB lookup, mainChain and pend
-    std::vector<BlockId> aToB(_pool.size(), INVALID_ID);
-    for (size_t i = 0; i < pairs.size(); i++)
-        aToB[pairs[i].aId] = pairs[i].bId;
-
-    Sequence mainChain;
-    mainChain.reserve(seq.size());
-    mainChain.push_back(aToB[sortedA[0]]);
-    for (size_t i = 0; i < sortedA.size(); i++)
-        mainChain.push_back(sortedA[i]);
-
-    std::vector<PendRecord> pend;
-    pend.reserve(pairs.size() - 1 + (oddId != INVALID_ID ? 1 : 0));
-    for (size_t i = 1; i < sortedA.size(); i++)
-        pend.push_back(PendRecord(aToB[sortedA[i]], sortedA[i]));
-    if (oddId != INVALID_ID)
-        pend.push_back(PendRecord(oddId, INVALID_ID));
-
-    // Phase 4 — Jacobsthal-ordered bounded binary insertion
-    int m = static_cast<int>(pend.size()) - (oddId != INVALID_ID ? 1 : 0);
-    std::vector<int> jOrder = jacobsthalOrder(m);
-
-    for (size_t k = 0; k < jOrder.size(); k++) {
-        const PendRecord& pr = pend[jOrder[k]];
-        int bound = findBoundPos(mainChain, pr.boundId);
-        int pos   = binaryInsertPos(mainChain, pr.bId, bound);
-        mainChain.insert(mainChain.begin() + pos, pr.bId);
-    }
-
-    if (oddId != INVALID_ID) {
-        int pos = binaryInsertPos(mainChain, pend.back().bId,
-                                  static_cast<int>(mainChain.size()));
-        mainChain.insert(mainChain.begin() + pos, pend.back().bId);
-    }
-
-    return mainChain;
-}
-
-template <typename OutContainer>
-OutContainer FordJohnson<OutContainer>::run(const std::vector<int>& input) {
-    _pool.clear();
-    _comparisons = 0;
-    if (input.empty()) return OutContainer();
-
-    Sequence seq;
-    seq.reserve(input.size());
-    for (size_t i = 0; i < input.size(); i++)
-        seq.push_back(makeBlock(input[i]));
-
-    Sequence sorted = sort(seq, 0);
-
-    OutContainer out;
-    for (size_t i = 0; i < sorted.size(); i++)
-        out.push_back(_pool[sorted[i]].value);
-    return out;
-}
-
-// ════════════════════════════════════════════════════════════════
-// PmergeMe — method implementations
-// ════════════════════════════════════════════════════════════════
 
 PmergeMe::PmergeMe() {}
-PmergeMe::PmergeMe(const PmergeMe& o) : _vec(o._vec), _deq(o._deq) {}
-PmergeMe& PmergeMe::operator=(const PmergeMe& o) {
-    if (this != &o) { _vec = o._vec; _deq = o._deq; }
-    return *this;
-}
+
 PmergeMe::~PmergeMe() {}
 
 void PmergeMe::addValue(int val) {
@@ -189,41 +9,187 @@ void PmergeMe::addValue(int val) {
     _deq.push_back(val);
 }
 
+
 void PmergeMe::printBefore() const {
-    for (size_t i = 0; i < _vec.size(); i++) {
-        if (i) std::cout << " ";
-        std::cout << _vec[i];
-    }
-    std::cout << "\n";
+    for (size_t i = 0; i < _vec.size(); i++)
+        std::cout << _vec[i] << " ";
+    std::cout << std::endl;
 }
 
+
 void PmergeMe::sortAndPrint() {
-    std::vector<int> input(_vec.begin(), _vec.end());
 
-    clock_t t0 = clock();
-    FordJohnson<std::vector<int> > fjVec;
-    std::vector<int> sortedVec = fjVec.run(input);
-    clock_t t1 = clock();
+    // -------- VECTOR TIMING --------
+    clock_t startVec = clock();
+    std::vector<int> sortedVec = fordJohnson(_vec);
+    clock_t endVec = clock();
 
-    clock_t t2 = clock();
-    FordJohnson<std::deque<int> > fjDeq;
-    std::deque<int> sortedDeq = fjDeq.run(input);
-    clock_t t3 = clock();
+    // -------- DEQUE TIMING --------
+    //clock_t startDeq = clock();
+    //std::deque<int> sortedDeq = fordJohnson(_deq);
+    //clock_t endDeq = clock();
 
-    std::cout << "After:  ";
-    for (size_t i = 0; i < sortedVec.size(); i++) {
-        if (i) std::cout << " ";
-        std::cout << sortedVec[i];
-    }
-    std::cout << "\n";
+    // -------- PRINT RESULT (ONLY ONCE) --------
+    std::cout << "After: ";
+    for (size_t i = 0; i < sortedVec.size(); i++)
+        std::cout << sortedVec[i] << " ";
+    std::cout << std::endl;
 
-    double us = 1e6 / static_cast<double>(CLOCKS_PER_SEC);
+    // -------- TIME CALCULATION --------
+    double timeVec = (double)(endVec - startVec) / CLOCKS_PER_SEC * 1e6;
+    //double timeDeq = (double)(endDeq - startDeq) / CLOCKS_PER_SEC * 1e6;
+
+    std::cout << "Comparisons: " << _cmpCount << std::endl;
     std::cout << "Time to process a range of " << _vec.size()
               << " elements with std::vector : "
-              << static_cast<double>(t1 - t0) * us << " us"
-              << " (" << fjVec.comparisons() << " comparisons)\n";
-    std::cout << "Time to process a range of " << _deq.size()
-              << " elements with std::deque  : "
-              << static_cast<double>(t3 - t2) * us << " us"
-              << " (" << fjDeq.comparisons() << " comparisons)\n";
+              << timeVec << " us" << std::endl;
+
+    //std::cout << "Time to process a range of " << _deq.size()
+    //          << " elements with std::deque  : "
+    //          << timeDeq << " us" << std::endl;
+}
+
+// ---------------- UTILS ----------------
+
+int PmergeMe::binarySearchInsert(const std::vector<int>& arr, int value) {
+    int left = 0;
+    int right = arr.size();
+
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] < value)
+            left = mid + 1;
+        else
+            right = mid;
+    }
+    return left;
+}
+
+std::vector<int> PmergeMe::buildJacobOrder(int n) {
+    std::vector<int> order;
+    if (n <= 1)
+        return order;
+
+    int prev = 1, curr = 3;
+    while (prev < n) {
+        int start = std::min(curr - 1, n - 1);
+        for (int i = start; i >= prev; i--)
+            order.push_back(i);
+        int next = curr + 2 * prev;
+        prev = curr;
+        curr = next;
+    }
+
+    return order;
+}
+
+// ---------------- CORE ----------------
+
+std::vector<int> PmergeMe::fordJohnson(std::vector<int>& values) {
+    int pairSize = 1 << _recLvl;
+
+    std::cout << "[lvl " << _recLvl << " pairSize=" << pairSize << "] values: ";
+    for (size_t i = 0; i < values.size(); i++)
+        std::cout << values[i] << " ";
+    std::cout << std::endl;
+
+    if ((int)values.size() / pairSize < 2) {
+        std::cout << "[lvl " << _recLvl << "] base case reached" << std::endl;
+        return values;
+    }
+
+    int numPairs = (values.size() / pairSize) / 2;
+
+    for (int i = 0; i < numPairs; i++) {
+        int startA = i * 2 * pairSize;
+        int startB = startA + pairSize;
+        int lastA  = values[startA + pairSize - 1];
+        int lastB  = values[startB + pairSize - 1];
+
+        _cmpCount++;
+        if (lastA > lastB) {
+            for (int j = 0; j < pairSize; j++)
+                std::swap(values[startA + j], values[startB + j]);
+        }
+    }
+
+    std::cout << "[lvl " << _recLvl << "] after pair sort: ";
+    for (size_t i = 0; i < values.size(); i++)
+        std::cout << values[i] << " ";
+    std::cout << std::endl;
+
+    _recLvl++;
+    fordJohnson(values);
+    _recLvl--;
+
+    int numGroups = (int)values.size() / pairSize;
+    std::vector<int> straggler(values.begin() + numGroups * pairSize, values.end());
+
+    std::cout << "[lvl " << _recLvl << "] unwind: separating " << numGroups << " groups (pairSize=" << pairSize << ")" << std::endl;
+
+    std::vector<std::vector<int> > chain, pend;
+    for (int i = 0; i < numGroups; i++) {
+        std::vector<int> g(values.begin() + i * pairSize,
+                           values.begin() + (i + 1) * pairSize);
+        (i % 2 == 0 ? pend : chain).push_back(g);
+    }
+
+    chain.insert(chain.begin(), pend[0]);
+
+    std::cout << "[lvl " << _recLvl << "] chain: ";
+    for (size_t i = 0; i < chain.size(); i++) {
+        std::cout << "[";
+        for (size_t j = 0; j < chain[i].size(); j++) std::cout << chain[i][j] << (j+1<chain[i].size()?",":"");
+        std::cout << "] ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "[lvl " << _recLvl << "] pend:  ";
+    for (size_t i = 1; i < pend.size(); i++) {
+        std::cout << "[";
+        for (size_t j = 0; j < pend[i].size(); j++) std::cout << pend[i][j] << (j+1<pend[i].size()?",":"");
+        std::cout << "] ";
+    }
+    if (!straggler.empty()) {
+        std::cout << "  straggler: [";
+        for (size_t i = 0; i < straggler.size(); i++) std::cout << straggler[i] << (i+1<straggler.size()?",":"");
+        std::cout << "]";
+    }
+    std::cout << std::endl;
+
+    // chainPos[k] tracks the current position of original chain[k] as insertions shift it
+    int m = (int)chain.size() - 1;
+    std::vector<int> chainPos(m);
+    for (int i = 0; i < m; i++)
+        chainPos[i] = i + 1;
+
+    std::vector<int> order = buildJacobOrder(pend.size());
+    for (size_t k = 0; k < order.size(); k++) {
+        int idx = order[k];
+        int key = pend[idx].back();
+        int hi = (idx < m) ? chainPos[idx] : (int)chain.size();
+
+        int lo = 0;
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            _cmpCount++;
+            if (chain[mid].back() < key) lo = mid + 1;
+            else hi = mid;
+        }
+        for (int i = 0; i < m; i++)
+            if (chainPos[i] >= lo) chainPos[i]++;
+        chain.insert(chain.begin() + lo, pend[idx]);
+        std::cout << "[lvl " << _recLvl << "] inserted pend[" << idx << "] (key=" << key << ") at pos " << lo << std::endl;
+    }
+
+    values.clear();
+    for (size_t i = 0; i < chain.size(); i++)
+        values.insert(values.end(), chain[i].begin(), chain[i].end());
+    values.insert(values.end(), straggler.begin(), straggler.end());
+
+    std::cout << "[lvl " << _recLvl << "] after insertion: ";
+    for (size_t i = 0; i < values.size(); i++) std::cout << values[i] << " ";
+    std::cout << std::endl;
+
+    return values;
 }
