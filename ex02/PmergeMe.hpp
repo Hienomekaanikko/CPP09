@@ -10,13 +10,14 @@ class PmergeMe {
 private:
     std::vector<int> _vec;
     std::deque<int>  _deq;
-    int _recLvl = 0;
-    int _cmpCount = 0;
+    int  _recLvl   = 0;
+    int  _cmpCount = 0;
+    bool _verbose  = false;
 
-    std::vector<int> fordJohnson(std::vector<int>& values);
+    template <typename Container>
+    Container fordJohnson(Container& values);
 
     std::vector<int> buildJacobOrder(int n);
-    int binarySearchInsert(const std::vector<int>& arr, int value);
 
 public:
     PmergeMe();
@@ -26,3 +27,5 @@ public:
     void printBefore() const;
     void sortAndPrint();
 };
+
+#include "PmergeMe.tpp"
