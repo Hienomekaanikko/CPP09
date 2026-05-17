@@ -1,9 +1,27 @@
 #include "RPN.hpp"
+#include <climits>
 
 RPN::RPN() {}
 
 bool isOperator(char c) {
     return c == '+' || c == '-' || c == '*' || c == '/';
+}
+
+static void checkOverflow(char op, long long a, long long b) {
+    if (op == '+') {
+        if (b > 0 && a > LLONG_MAX - b) throw std::runtime_error("Error");
+        if (b < 0 && a < LLONG_MIN - b) throw std::runtime_error("Error");
+    } else if (op == '-') {
+        if (b > 0 && a < LLONG_MIN + b) throw std::runtime_error("Error");
+        if (b < 0 && a > LLONG_MAX + b) throw std::runtime_error("Error");
+    } else if (op == '*') {
+        if (a > 0 && b > 0 && a > LLONG_MAX / b) throw std::runtime_error("Error");
+        if (a < 0 && b < 0 && a < LLONG_MAX / b) throw std::runtime_error("Error");
+        if (a > 0 && b < 0 && b < LLONG_MIN / a) throw std::runtime_error("Error");
+        if (a < 0 && b > 0 && a < LLONG_MIN / b) throw std::runtime_error("Error");
+    } else if (op == '/') {
+        if (a == LLONG_MIN && b == -1) throw std::runtime_error("Error");
+    }
 }
 
 RPN::RPN(const std::string& input) {
@@ -19,6 +37,7 @@ RPN::RPN(const std::string& input) {
             long long val2 = _stack.top(); _stack.pop();
             long long res = 0;
 
+            checkOverflow(token[0], val2, val1);
             if (token[0] == '+') res = val2 + val1;
             else if (token[0] == '-') res = val2 - val1;
             else if (token[0] == '/') {

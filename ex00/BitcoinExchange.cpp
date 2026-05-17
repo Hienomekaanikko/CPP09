@@ -135,6 +135,8 @@ void BitcoinExchange::processInput(const std::string& filename) {
         }
 
         std::cout << it->first << " => " << value << " = "
-                  << value * it->second << "\n";
+                  << std::fixed << std::setprecision(2)
+                  << value * it->second
+                  << std::defaultfloat << "\n";
     }
 }
