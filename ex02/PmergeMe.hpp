@@ -5,17 +5,16 @@
 #include <deque>
 #include <algorithm>
 #include <ctime>
+#include <numeric>
 
 class PmergeMe {
 private:
     std::vector<int> _vec;
     std::deque<int>  _deq;
-    int  _recLvl   = 0;
-    int  _cmpCount = 0;
-    bool _verbose  = false;
+    int _cmpCount = 0;
 
-    template <typename Container>
-    Container fordJohnson(Container& values);
+    void fordJohnsonVec(std::vector<int>& values, int pairSize = 1);
+    void fordJohnsonDeq(std::deque<int>& values, int pairSize = 1);
 
     std::vector<int> buildJacobOrder(int n);
 
@@ -27,5 +26,3 @@ public:
     void printBefore() const;
     void sortAndPrint();
 };
-
-#include "PmergeMe.tpp"

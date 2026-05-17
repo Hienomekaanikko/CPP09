@@ -12,14 +12,15 @@ int main(int ac, char **av) {
     for (int i = 1; i < ac; i++) {
         long long val;
 
+        size_t pos;
         try {
-            val = std::stoll(av[i]);
+            val = std::stoll(av[i], &pos);
         } catch (...) {
             std::cerr << "Error" << std::endl;
             return 1;
         }
 
-        if (val < 0 || val > INT_MAX) {
+        if (pos != std::string(av[i]).size() || val < 0 || val > INT_MAX) {
             std::cerr << "Error" << std::endl;
             return 1;
         }
