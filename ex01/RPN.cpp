@@ -27,9 +27,11 @@ static void checkOverflow(char op, long long a, long long b) {
 RPN::RPN(const std::string& input) {
     std::istringstream iss(input);
     std::string token;
+    bool hasOperator = false;
 
     while (iss >> token) {
         if (token.size() == 1 && isOperator(token[0])) {
+            hasOperator = true;
             if (_stack.size() < 2)
                 throw std::runtime_error("Error");
 
@@ -51,7 +53,7 @@ RPN::RPN(const std::string& input) {
             try {
                 size_t pos;
                 long long num = std::stoll(token, &pos);
-                if (pos != token.size())
+                if (pos != token.size() || num < -9 || num > 9)
                     throw std::runtime_error("Error");
                 _stack.push(num);
             } catch (...) {
@@ -60,7 +62,7 @@ RPN::RPN(const std::string& input) {
         }
     }
 
-    if (_stack.size() != 1)
+    if (_stack.size() != 1 || !hasOperator)
         throw std::runtime_error("Error");
 
     std::cout << _stack.top() << std::endl;
