@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   BitcoinExchange.cpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: msuokas <msuokas@student.hive.fi>          #+#  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026-05-18 07:10:43 by msuokas           #+#    #+#             */
+/*   Updated: 2026-05-18 07:10:43 by msuokas          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "BitcoinExchange.hpp"
 
 BitcoinExchange::BitcoinExchange(const std::string& path) {
@@ -36,6 +48,19 @@ bool BitcoinExchange::isValidDate(const std::string& date) {
 
     if (day > daysInMonth[month - 1]) return false;
     return true;
+}
+
+std::string BitcoinExchange::formatNumber(double value, int precision) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(precision) << value;
+    std::string s = oss.str();
+    if (s.find('.') != std::string::npos) {
+        while (!s.empty() && s.back() == '0')
+            s.pop_back();
+        if (!s.empty() && s.back() == '.')
+            s.pop_back();
+    }
+    return s;
 }
 
 void BitcoinExchange::loadDatabase(const std::string& filename) {
@@ -134,9 +159,8 @@ void BitcoinExchange::processInput(const std::string& filename) {
             --it;
         }
 
-        std::cout << it->first << " => " << value << " = "
-                  << std::fixed << std::setprecision(2)
-                  << value * it->second
-                  << std::defaultfloat << "\n";
+        std::cout << it->first << " => "
+                  << formatNumber(value, 3) << " = "
+                  << formatNumber(value * it->second, 3) << "\n";
     }
 }

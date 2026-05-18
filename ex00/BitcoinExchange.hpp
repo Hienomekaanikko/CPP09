@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   BitcoinExchange.hpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: msuokas <msuokas@student.hive.fi>          #+#  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026-05-18 07:10:48 by msuokas           #+#    #+#             */
+/*   Updated: 2026-05-18 07:10:48 by msuokas          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <map>
@@ -5,6 +17,7 @@
 #include <iostream> 
 #include <fstream>   
 #include <sstream>   
+#include <iostream>
 #include <stdexcept> 
 #include <iomanip>
 #include <cctype>
@@ -23,5 +36,6 @@ private:
     std::map<std::string, double> rates;
 
     static bool isValidDate(const std::string& date);
+    static std::string formatNumber(double value, int precision);
     void loadDatabase(const std::string& filename);
 };

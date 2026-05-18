@@ -1,5 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: msuokas <msuokas@student.hive.fi>          #+#  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026-05-18 09:21:52 by msuokas           #+#    #+#             */
+/*   Updated: 2026-05-18 09:21:52 by msuokas          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "PmergeMe.hpp"
-#include <climits>
 
 int main(int ac, char **av) {
     if (ac < 2) {
@@ -10,6 +21,10 @@ int main(int ac, char **av) {
     PmergeMe sorter;
 
     for (int i = 1; i < ac; i++) {
+        if (i > 3000) {
+            std::cerr << "Error: too many arguments (max 3000)." << std::endl;
+            return 1;
+        }
         long long val;
 
         size_t pos;

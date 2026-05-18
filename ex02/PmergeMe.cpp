@@ -1,6 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   PmergeMe.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: msuokas <msuokas@student.hive.fi>          #+#  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026-05-18 07:10:02 by msuokas           #+#    #+#             */
+/*   Updated: 2026-05-18 07:10:02 by msuokas          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "PmergeMe.hpp"
 
-PmergeMe::PmergeMe() {}
+PmergeMe::PmergeMe() {
+    //_cmpCount = 1;
+}
 
 PmergeMe::~PmergeMe() {}
 
@@ -19,14 +33,14 @@ void PmergeMe::printBefore() const {
 
 void PmergeMe::sortAndPrint() {
 
-    _cmpCount = 0;
+    //_cmpCount = 0;
     clock_t startVec = clock();
-    fordJohnsonVec(_vec);
+    fordJohnsonVec(_vec, 1);
     clock_t endVec = clock();
 
-    _cmpCount = 0;
+    //_cmpCount = 0;
     clock_t startDeq = clock();
-    fordJohnsonDeq(_deq);
+    fordJohnsonDeq(_deq, 1);
     clock_t endDeq = clock();
 
     std::cout << "After: ";
@@ -34,11 +48,10 @@ void PmergeMe::sortAndPrint() {
         std::cout << _vec[i] << " ";
     std::cout << std::endl;
 
-    // -------- TIME CALCULATION --------
     double timeVec = (double)(endVec - startVec) / CLOCKS_PER_SEC * 1e6;
     double timeDeq = (double)(endDeq - startDeq) / CLOCKS_PER_SEC * 1e6;
 
-    std::cout << "Comparisons: " << _cmpCount << std::endl;
+    //std::cout << "Comparisons: " << _cmpCount << std::endl;
     std::cout << "Time to process a range of " << _vec.size()
               << " elements with std::vector : "
               << timeVec << " us" << std::endl;
@@ -46,8 +59,6 @@ void PmergeMe::sortAndPrint() {
               << " elements with std::deque  : "
               << timeDeq << " us" << std::endl;
 }
-
-// ---------------- FORD-JOHNSON ----------------
 
 void PmergeMe::fordJohnsonVec(std::vector<int>& values, int pairSize) {
     using Group = std::vector<int>;
@@ -59,7 +70,7 @@ void PmergeMe::fordJohnsonVec(std::vector<int>& values, int pairSize) {
     for (int i = 0; i < numPairs; i++) {
         int a = i * 2 * pairSize;
         int b = a + pairSize;
-        _cmpCount++;
+        //_cmpCount++;
         if (values[a + pairSize - 1] > values[b + pairSize - 1])
             for (int j = 0; j < pairSize; j++)
                 std::swap(values[a + j], values[b + j]);
@@ -91,7 +102,7 @@ void PmergeMe::fordJohnsonVec(std::vector<int>& values, int pairSize) {
         int lo = 0;
         while (lo < hi) {
             int mid = lo + (hi - lo) / 2;
-            _cmpCount++;
+            //_cmpCount++;
             (chain[mid].back() < key) ? lo = mid + 1 : hi = mid;
         }
         for (auto& pos : chainPos)
@@ -116,7 +127,7 @@ void PmergeMe::fordJohnsonDeq(std::deque<int>& values, int pairSize) {
     for (int i = 0; i < numPairs; i++) {
         int a = i * 2 * pairSize;
         int b = a + pairSize;
-        _cmpCount++;
+        //_cmpCount++;
         if (values[a + pairSize - 1] > values[b + pairSize - 1])
             for (int j = 0; j < pairSize; j++)
                 std::swap(values[a + j], values[b + j]);
@@ -148,7 +159,7 @@ void PmergeMe::fordJohnsonDeq(std::deque<int>& values, int pairSize) {
         int lo = 0;
         while (lo < hi) {
             int mid = lo + (hi - lo) / 2;
-            _cmpCount++;
+            //_cmpCount++;
             (chain[mid].back() < key) ? lo = mid + 1 : hi = mid;
         }
         for (auto& pos : chainPos)
@@ -162,8 +173,6 @@ void PmergeMe::fordJohnsonDeq(std::deque<int>& values, int pairSize) {
         values.insert(values.end(), g.begin(), g.end());
     values.insert(values.end(), straggler.begin(), straggler.end());
 }
-
-// ---------------- UTILS ----------------
 
 std::vector<int> PmergeMe::buildJacobOrder(int n) {
     std::vector<int> order;

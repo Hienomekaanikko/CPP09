@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   PmergeMe.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: msuokas <msuokas@student.hive.fi>          #+#  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026-05-18 07:09:54 by msuokas           #+#    #+#             */
+/*   Updated: 2026-05-18 07:09:54 by msuokas          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <iostream>
@@ -6,15 +18,16 @@
 #include <algorithm>
 #include <ctime>
 #include <numeric>
+#include <climits>
 
 class PmergeMe {
 private:
     std::vector<int> _vec;
     std::deque<int>  _deq;
-    int _cmpCount = 0;
+    //int _cmpCount;
 
-    void fordJohnsonVec(std::vector<int>& values, int pairSize = 1);
-    void fordJohnsonDeq(std::deque<int>& values, int pairSize = 1);
+    void fordJohnsonVec(std::vector<int>& values, int pairSize);
+    void fordJohnsonDeq(std::deque<int>& values, int pairSize);
 
     std::vector<int> buildJacobOrder(int n);
 
