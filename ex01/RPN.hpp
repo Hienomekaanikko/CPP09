@@ -15,6 +15,7 @@
 #include <iostream>
 #include <sstream>
 #include <stack>
+#include <climits>
 #include <string>
 
 class RPN {

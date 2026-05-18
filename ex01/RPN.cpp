@@ -11,9 +11,10 @@
 /* ************************************************************************** */
 
 #include "RPN.hpp"
-#include <climits>
 
 RPN::RPN() {}
+
+RPN::~RPN() {}
 
 bool isOperator(char c) {
     return c == '+' || c == '-' || c == '*' || c == '/';

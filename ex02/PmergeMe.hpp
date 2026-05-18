@@ -34,6 +34,8 @@ private:
 public:
     PmergeMe();
     ~PmergeMe();
+    PmergeMe& operator=(const PmergeMe& o) = default;
+    PmergeMe(const PmergeMe& o) = default;
 
     void addValue(int val);
     void printBefore() const;

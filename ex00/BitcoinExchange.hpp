@@ -14,7 +14,6 @@
 
 #include <map>
 #include <string>
-#include <iostream> 
 #include <fstream>   
 #include <sstream>   
 #include <iostream>
@@ -24,18 +23,17 @@
 #include <cmath>
 
 class BitcoinExchange {
-public:
-    BitcoinExchange(const std::string& path);
-    BitcoinExchange(const BitcoinExchange& o);
-    BitcoinExchange& operator=(const BitcoinExchange& o);
-    ~BitcoinExchange();
+    private:
+        std::map<std::string, double> rates;
 
-    void processInput(const std::string& filename);
+        static bool isValidDate(const std::string& date);
+        static std::string formatNumber(double value, int precision);
+        void loadDatabase(const std::string& filename);
+    public:
+        BitcoinExchange(const std::string& path);
+        BitcoinExchange(const BitcoinExchange& o);
+        BitcoinExchange& operator=(const BitcoinExchange& o);
+        ~BitcoinExchange();
 
-private:
-    std::map<std::string, double> rates;
-
-    static bool isValidDate(const std::string& date);
-    static std::string formatNumber(double value, int precision);
-    void loadDatabase(const std::string& filename);
+        void processInput(const std::string& filename);
 };
